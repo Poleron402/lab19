@@ -2,6 +2,7 @@ package application;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,11 +39,25 @@ public class ControllerPrescriptionFill {
 			 * valid pharmacy name and address, get pharmacy id and phone
 			 */
 			// TODO
-			PreparedStatement checkPh =
+			int pharmId;
+			String phone;
+			PreparedStatement checkPh = conn.prepareStatement("select * from pharmacy where name = ? and address = ?");
+
+			checkPh.setString(1, p.getPharmacyName());
+			checkPh.setString(2, p.getPharmacyAddress());
+			ResultSet rsPharm = checkPh.executeQuery();
+			if (!rsPharm.next()){
+				model.addAttribute("message", "Cannot locate such pharmacy");
+				model.addAttribute("prescription", p);
+				return "prescription_fill";
+			}else{
+				pharmId = rsPharm.getInt("pharmID");
+				phone = rsPharm.getNString("phone");
+			}
 			// TODO find the patient information
-
+			String patientLastName = p.getPatientLastName();
 			// TODO find the prescription
-
+			int RXID = p.getRxid();
 
 			/*
 			 * have we exceeded the number of allowed refills
@@ -54,6 +69,7 @@ public class ControllerPrescriptionFill {
 			/*
 			 * get doctor information
 			 */
+
 			// TODO
 
 			/*
