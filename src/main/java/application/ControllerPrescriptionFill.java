@@ -56,14 +56,25 @@ public class ControllerPrescriptionFill {
 			}
 			// TODO find the patient information
 			String patientLastName = p.getPatientLastName();
+			if (patientLastName.isEmpty()){
+				model.addAttribute("message", "A patient with this name was not found");
+				model.addAttribute("prescription", p);
+				return "prescription_fill";
+			}
 			// TODO find the prescription
-			int RXID = p.getRxid();
+			Integer RXID = p.getRxid();
 
 			/*
 			 * have we exceeded the number of allowed refills
 			 * the first fill is not considered a refill.
 			 */
+			int numberOfRefills = p.getRefills();
+			PreparedStatement checkRef = conn.prepareStatement("select number_refills from prescription where RXID = ?");
+			checkRef.setInt(1, RXID);
+			int refills = checkRef.executeUpdate();
+			if (numberOfRefills >= refills+1){
 
+			}
 			// TODO
 
 			/*

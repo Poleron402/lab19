@@ -92,16 +92,20 @@ public class ControllerPrescriptionCreate {
 				drug_id = resultSet.getInt("drugID");
 			}
 			PreparedStatement addPrescription = conn.prepareStatement(
-					"insert into prescription (quantity, number_refills, doctor_id, patient_id, pharmID, drugID) values(?, ?, ?, ?, 1, ?);");
+					"insert into prescription (quantity, number_refills, doctor_id, patient_id, drugID) values(?, ?, ?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
 			addPrescription.setInt(1, p.getQuantity());
-			addPrescription.setInt(2, p.getRefillsRemaining());
+			addPrescription.setInt(2, p.getRefills());
 			addPrescription.setInt(3, p.getDoctor_id());
 			addPrescription.setInt(4, p.getPatient_id());
 			addPrescription.setInt(5, drug_id);
+
+			addPrescription.executeUpdate();
+			ResultSet rs = addPrescription.getGeneratedKeys();
+			if (rs.next()) p.setRxid(rs.getInt(1));
 			//TODO
 			model.addAttribute("message", "Prescription created.");
 			model.addAttribute("prescription", p);
-			addPrescription.executeUpdate();
+
 			return "prescription_show";
 
 		}catch (SQLException e) {
