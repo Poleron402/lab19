@@ -119,4 +119,4 @@ CREATE TABLE prescription_fill(
 
 );
 select * from doctor;
-
+select * from prescription;
