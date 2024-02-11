@@ -57,13 +57,33 @@ public class ControllerPrescriptionFill {
 			}
 			// TODO find the patient information
 			String patientLastName = p.getPatientLastName();
+			String patientFirstName = "";
+			int patId = -1;
 			if (patientLastName.isEmpty()){
 				model.addAttribute("message", "A patient with this name was not found");
 				model.addAttribute("prescription", p);
 				return "prescription_fill";
+			}else{
+				PreparedStatement getPatient = conn.prepareStatement("select * from patient join prescription on patient.id = prescription.patient_id where patient.last_name = ? and prescription.RXID = ?");
+				getPatient.setString(1, patientLastName);
+				getPatient.setInt(2, p.getRxid());
+				ResultSet patientRs = getPatient.executeQuery();
+				if (patientRs.next()){
+					patId = patientRs.getInt("id");
+					patientFirstName = patientRs.getString("first_name");
+				}
 			}
+
 			// TODO find the prescription
-			Integer RXID = p.getRxid();
+			int RXID = p.getRxid();
+			String drugName = "";
+			PreparedStatement drugLookup= conn.prepareStatement("select * from drug join prescription on drug.drugID = prescription.drugID where prescription.RXID = ?");
+			drugLookup.setInt(1, RXID);
+			ResultSet drugRs = drugLookup.executeQuery();
+			if (drugRs.next()){
+				drugName = drugRs.getString("name");
+			}
+
 
 			/*
 			 * have we exceeded the number of allowed refills
@@ -92,18 +112,26 @@ public class ControllerPrescriptionFill {
 			// TODO
 			getDoc.setInt(1, RXID);
 			ResultSet checkDocRes = getDoc.executeQuery();
+			String docFirstName = "";
+			String docLastName = "";
+			int docId = -1;
 			if (!checkDocRes.next()){
 				model.addAttribute("message", "Exceeded the number of refills, see the doctor to renew prescription");
 				model.addAttribute("prescription", p);
 				return "prescription_fill";
+			}else{
+				docFirstName =checkDocRes.getString("first_name");
+				docLastName = checkDocRes.getString("last_name");
+				docId = checkDocRes.getInt("id");
 			}
 
 			/*
 			 * calculate cost of prescription
 			 */
 			// TODO
-			Double cost = 0.0;
-			Double priceTotal = 0.0;
+			double cost = 0.0;
+			double priceTotal = 0.0;
+
 			int amountDistributed;
 			PreparedStatement getAmount = conn.prepareStatement("select * from cost join prescription on cost.drugId = prescription.drugID where prescription.RXID = ?");
 			getAmount.setInt(1, RXID);
@@ -111,7 +139,7 @@ public class ControllerPrescriptionFill {
 			if(rsAmount.next()){
 				amountDistributed = rsAmount.getInt("amount");
 				cost = rsAmount.getDouble("cost");
-				priceTotal = cost*(p.getQuantity()/amountDistributed);
+				priceTotal = cost*(rsAmount.getInt("quantity")/amountDistributed);
 			}else{
 				model.addAttribute("message", "Error calculating th etotal cost");
 				model.addAttribute("prescription", p);
@@ -124,6 +152,17 @@ public class ControllerPrescriptionFill {
 			saveRefill.setInt(3, pharmId);
 			saveRefill.setInt(4, RXID);
 			saveRefill.executeUpdate();
+			//setting up things for the prescription model
+			p.setPharmacyID(pharmId);
+			p.setDateFilled(LocalDate.now().toString());
+			p.setPharmacyPhone(phone);
+			p.setCost(""+priceTotal);
+			p.setPatientFirstName(patientFirstName);
+			p.setDrugName(drugName);
+			p.setDoctorLastName(docLastName);
+			p.setDoctorFirstName(docFirstName);
+			p.setPatient_id(patId);
+			p.setDoctor_id(docId);
 			// show the updated prescription with the most recent fill information
 			model.addAttribute("message", "Prescription filled.");
 			model.addAttribute("prescription", p);
