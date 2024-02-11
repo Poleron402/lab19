@@ -71,17 +71,29 @@ public class ControllerPrescriptionFill {
 			int numberOfRefills = p.getRefills();
 			PreparedStatement checkRef = conn.prepareStatement("select number_refills from prescription where RXID = ?");
 			checkRef.setInt(1, RXID);
-			int refills = checkRef.executeUpdate();
-			if (numberOfRefills >= refills+1){
-
+			ResultSet refills = checkRef.executeQuery();
+			int numRef = refills.getInt("number_refills");
+			if (numberOfRefills > numRef+1){
+				model.addAttribute("message", "Exceeded the number of refills, see the doctor to renew prescription");
+				model.addAttribute("prescription", p);
+				return "prescription_fill";
 			}
 			// TODO
 
 			/*
 			 * get doctor information
 			 */
-
+			PreparedStatement getDoc = conn.prepareStatement(
+					"select * from doctor join prescription on " +
+							"doctor.id = prescription.doctor_id where prescription.RXID = ?");
 			// TODO
+			getDoc.setInt(1, RXID);
+			ResultSet checkDocRes = getDoc.executeQuery();
+			if (!checkDocRes.next()){
+				model.addAttribute("message", "Exceeded the number of refills, see the doctor to renew prescription");
+				model.addAttribute("prescription", p);
+				return "prescription_fill";
+			}
 
 			/*
 			 * calculate cost of prescription
