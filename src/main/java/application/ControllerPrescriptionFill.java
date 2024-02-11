@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -51,7 +52,7 @@ public class ControllerPrescriptionFill {
 				model.addAttribute("prescription", p);
 				return "prescription_fill";
 			}else{
-				pharmId = rsPharm.getInt("pharmID");
+				pharmId = rsPharm.getInt("pharmacy_id");
 				phone = rsPharm.getNString("phone");
 			}
 			// TODO find the patient information
@@ -72,11 +73,13 @@ public class ControllerPrescriptionFill {
 			PreparedStatement checkRef = conn.prepareStatement("select number_refills from prescription where RXID = ?");
 			checkRef.setInt(1, RXID);
 			ResultSet refills = checkRef.executeQuery();
-			int numRef = refills.getInt("number_refills");
-			if (numberOfRefills > numRef+1){
-				model.addAttribute("message", "Exceeded the number of refills, see the doctor to renew prescription");
-				model.addAttribute("prescription", p);
-				return "prescription_fill";
+			if (refills.next()) {
+				int numRef = refills.getInt("number_refills");
+				if (numberOfRefills > numRef + 1) {
+					model.addAttribute("message", "Exceeded the number of refills, see the doctor to renew prescription");
+					model.addAttribute("prescription", p);
+					return "prescription_fill";
+				}
 			}
 			// TODO
 
@@ -99,9 +102,28 @@ public class ControllerPrescriptionFill {
 			 * calculate cost of prescription
 			 */
 			// TODO
-
+			Double cost = 0.0;
+			Double priceTotal = 0.0;
+			int amountDistributed;
+			PreparedStatement getAmount = conn.prepareStatement("select * from cost join prescription on cost.drugId = prescription.drugID where prescription.RXID = ?");
+			getAmount.setInt(1, RXID);
+			ResultSet rsAmount = getAmount.executeQuery();
+			if(rsAmount.next()){
+				amountDistributed = rsAmount.getInt("amount");
+				cost = rsAmount.getDouble("cost");
+				priceTotal = cost*(p.getQuantity()/amountDistributed);
+			}else{
+				model.addAttribute("message", "Error calculating th etotal cost");
+				model.addAttribute("prescription", p);
+				return "prescription_fill";
+			}
 			// TODO save updated prescription
-
+			PreparedStatement saveRefill = conn.prepareStatement("insert into prescription_fill (date, price, pharmacy_id, RXID) values (?, ?, ?, ?)");
+			saveRefill.setString(1, LocalDate.now().toString());
+			saveRefill.setDouble(2, priceTotal);
+			saveRefill.setInt(3, pharmId);
+			saveRefill.setInt(4, RXID);
+			saveRefill.executeUpdate();
 			// show the updated prescription with the most recent fill information
 			model.addAttribute("message", "Prescription filled.");
 			model.addAttribute("prescription", p);
