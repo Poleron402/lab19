@@ -55,8 +55,8 @@ INSERT INTO pharmacy (name, address, phone) VALUES
 CREATE TABLE IF NOT EXISTS cost (
                                     pharmacy_id INT NOT NULL,
                                     drugId INT NOT NULL,
-                                    unit VARCHAR(100), -- like tablets, bottles, etc
-    cost DECIMAL(6,2) NOT NULL,
+                                    unit_amount INT NOT NULL, -- like tablets, bottles, etc
+                                    cost DECIMAL(6,2) NOT NULL,
     amount INT NOT NULL,
     PRIMARY KEY (pharmacy_id, drugId),
     FOREIGN KEY (pharmacy_id) REFERENCES pharmacy (pharmacy_id),
