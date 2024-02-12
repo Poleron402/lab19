@@ -41,7 +41,7 @@ public class ControllerPatientUpdate {
 
 		pv.setId(id);
 
-		try (Connection con = getConnection();){
+		try (Connection con = getConnection()){
 
 			PreparedStatement ps = con.prepareStatement("SELECT last_name, first_name, birthdate, ssn, street, city, state, zipcode, primaryName from patient where id=?");
 			ps.setInt(1, id);
