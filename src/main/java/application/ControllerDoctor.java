@@ -84,7 +84,7 @@ public class ControllerDoctor {
 		
 		System.out.println("showDoctor "+doctor);  // debug
 		
-		try (Connection con = getConnection();) {
+		try (Connection con = getConnection()) {
 			
 			PreparedStatement ps = con.prepareStatement("select last_name, first_name, specialty, practice_since from doctor where id=? and last_name=?");
 			ps.setInt(1, doctor.getId());
@@ -124,7 +124,7 @@ public class ControllerDoctor {
 		
 		DoctorView doctor = new DoctorView();
 		doctor.setId(id);
-		try (Connection con = getConnection();) {
+		try (Connection con = getConnection()) {
 
 			PreparedStatement ps = con.prepareStatement("select last_name, first_name, specialty, practice_since from doctor where id=?");
 			ps.setInt(1,  id);
@@ -157,7 +157,7 @@ public class ControllerDoctor {
 	@PostMapping("/doctor/edit")
 	public String updateDoctor(DoctorView doctor, Model model) {
 		System.out.println("updateDoctor " + doctor);
-		try (Connection con = getConnection();) {
+		try (Connection con = getConnection()) {
 
 			PreparedStatement ps = con.prepareStatement("update doctor set specialty=?, practice_since=? where id=?");
 			ps.setString(1, doctor.getSpecialty());

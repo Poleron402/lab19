@@ -44,7 +44,7 @@ public class ControllerPatientCreate {
 		 * insert to patient table
 		 */
 
-		try (Connection con = getConnection();) {
+		try (Connection con = getConnection()) {
 			PreparedStatement ps = con.prepareStatement("insert into patient(last_name, first_name, birthdate, ssn, street, city, state, zipcode, primaryName ) values(?, ?, ?, ?, ?, ?, ?, ?, ?)",
 					Statement.RETURN_GENERATED_KEYS);
 			ps.setString(1, p.getLast_name());
@@ -120,7 +120,7 @@ public class ControllerPatientCreate {
 		// TODO   search for patient by id and name
 		// if found, return "patient_show", else return error message and "patient_get"
 
-		try (Connection con = getConnection();) {
+		try (Connection con = getConnection()) {
 
 			PreparedStatement ps = con.prepareStatement("select last_name, first_name, primaryName from patient where id=? and last_name=?");
 			ps.setInt(1, p.getId());

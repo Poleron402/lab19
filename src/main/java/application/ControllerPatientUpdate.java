@@ -13,6 +13,7 @@ import view.*;
 import java.sql.*;
 
 
+
 /*
  * Controller class for patient interactions.
  *   register as a new patient.
@@ -23,7 +24,6 @@ public class ControllerPatientUpdate {
 	
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
-	
 	/*
 	 *  Display patient profile for patient id.
 	 */
@@ -73,7 +73,6 @@ public class ControllerPatientUpdate {
 			return "patient_get";
 		}
 
-		return "patient_edit";		 		
 }
 	
 	
@@ -94,7 +93,7 @@ public class ControllerPatientUpdate {
 		// ---------------------------------------------------------------
 
 
-		try (Connection con = getConnection();) {
+		try (Connection con = getConnection()) {
 			PreparedStatement ps = con.prepareStatement("update patient set street=?,  city=?, state=?, zipcode=?, primaryName=? where id=? ");
 			ps.setString(1, p.getStreet());
 			ps.setString(2, p.getCity());
@@ -125,8 +124,6 @@ public class ControllerPatientUpdate {
 						return "patient_edit";
 					}
 
-					break;
-
 				}
 			}
 
@@ -151,7 +148,11 @@ public class ControllerPatientUpdate {
 
 		// model.addAttribute("message", some message);
 		// model.addAttribute("patient", p)
-		return "patient_show";
+	}
+
+	private Connection getConnection() throws SQLException {
+		Connection conn = jdbcTemplate.getDataSource().getConnection();
+		return conn;
 	}
 	
 	
