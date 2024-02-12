@@ -95,15 +95,23 @@ public class ControllerPrescriptionFill {
 			int numRef = 0;
 			if (refills.next()) {
 				numRef = refills.getInt("number_refills");
-				if (numRef == -1) {
-					model.addAttribute("message", "Exceeded the number of refills, see the doctor to renew prescription");
-					model.addAttribute("prescription", p);
-					return "prescription_fill";
-				}else{
-					PreparedStatement updateRefills = conn.prepareStatement("insert into prescription (number_refills) values (?) where RXID = ?");
-					updateRefills.setInt(1, numRef-1);
-					updateRefills.setInt(2, RXID);
+				PreparedStatement checkRequests = conn.prepareStatement("select * from prescription_fill where RXID = ?");
+				checkRequests.setInt(1, RXID);
+				ResultSet requestRs = checkRequests.executeQuery();
+				if(requestRs.next()){
+					if (numRef == 0) {
+						model.addAttribute("message", "Exceeded the number of refills, see the doctor to renew prescription");
+						model.addAttribute("prescription", p);
+						return "prescription_fill";
+					}else{
+						PreparedStatement updateRefills = conn.prepareStatement("update prescription set number_refills = ? where RXID = ?");
+						updateRefills.setInt(1, numRef-1);
+						updateRefills.setInt(2, RXID);
+						updateRefills.executeUpdate();
+						numRef -= 1;
+					}
 				}
+
 			}
 			// TODO
 
