@@ -43,7 +43,7 @@ public class ControllerPatientUpdate {
 
 		try (Connection con = getConnection()){
 
-			PreparedStatement ps = con.prepareStatement("SELECT last_name, first_name, birthdate, ssn, street, city, state, zipcode, primaryName from patient where id=?");
+			PreparedStatement ps = con.prepareStatement("SELECT * from patient where id=?"); // last_name, first_name, birthdate, ssn, street, city, state, zipcode, primaryName
 			ps.setInt(1, id);
 
 			ResultSet rs = ps.executeQuery();
@@ -61,6 +61,7 @@ public class ControllerPatientUpdate {
 				pv.setState(rs.getString(7));
 				pv.setZipcode(rs.getString(8));
 				pv.setPrimaryName(rs.getString(9));
+
 
 				model.addAttribute("patient", pv);
 				return "patient_edit";
@@ -99,35 +100,30 @@ public class ControllerPatientUpdate {
 			ps.setString(2, p.getCity());
 			ps.setString(3, p.getState());
 			ps.setString(4, p.getZipcode());
-			ps.setString(5, p.getPrimaryName());
-			ps.setInt(6, p.getId());
 
 			// Check if Primary Name matches Doctor name before execute update.
 			// Note: the lab document gives the impression that primaryName is the doctor's last name.
 
-			PreparedStatement docQ = con.prepareStatement("SELECT last_name from doctor");
+			PreparedStatement docQ = con.prepareStatement("SELECT id from doctor where last_name=?");
+			docQ.setString(1, p.getPrimaryName());
 			ResultSet doc = docQ.executeQuery();
 
-			while (doc.next()) {
-				if (doc.getString(1).equals(p.getPrimaryName())) {
+			ps.setString(5, doc.getString(1));
+			ps.setInt(6, p.getId());
 
-					int rc = ps.executeUpdate();
+			int rc = ps.executeUpdate();
 
-					if (rc == 1) {
-						model.addAttribute("message", "Update successful");
-						model.addAttribute("patient", p);
-						return "patient_show";
+			if (rc == 1) {
+				model.addAttribute("message", "Update successful");
+				model.addAttribute("patient", p);
+				return "patient_show";
 
-					} else {
-						model.addAttribute("message", "Error. Update was not successful");
-						model.addAttribute("patient", p);
-						return "patient_edit";
-					}
-
-				}
+			} else {
+				model.addAttribute("message", "Error. Update was not successful");
+				model.addAttribute("patient", p);
+				return "patient_edit";
 			}
 
-			return "patient_show";
 			// return "invalid_doctor"; // Not sure if this is what should be returned when no match with a doctor.
 
 		} catch (SQLException e) {

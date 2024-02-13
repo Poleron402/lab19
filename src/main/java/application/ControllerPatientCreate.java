@@ -55,7 +55,6 @@ public class ControllerPatientCreate {
 			ps.setString(6, p.getCity());
 			ps.setString(7, p.getState());
 			ps.setString(8, p.getZipcode());
-			ps.setString(9, p.getPrimaryName());
 
 			// Check if Primary Name matches Doctor name before execute update.
 			// Note: the lab document gives the impression that primaryName is the doctor's last name.
@@ -64,27 +63,22 @@ public class ControllerPatientCreate {
 			 * validate doctor last name and find the doctor id
 			 */
 
-			PreparedStatement docQ = con.prepareStatement("SELECT last_name from doctor");
+			PreparedStatement docQ = con.prepareStatement("SELECT id from doctor where last_name=?");
+			docQ.setString(1, p.getPrimaryName());
 			ResultSet doc = docQ.executeQuery();
 
-			while (doc.next()) {
-				if (doc.getString(1).equals(p.getPrimaryName())) { // 				******
+			ps.setString(9, doc.getString(1));
+			ps.executeUpdate();
 
-					ps.executeUpdate();
-					ResultSet rs = ps.getGeneratedKeys();
-					if (rs.next()) p.setId(rs.getInt(1));
+			ResultSet rs = ps.getGeneratedKeys();
+			if (rs.next()) p.setId(rs.getInt(1));
 
-					// display message and patient information
-					model.addAttribute("message", "Registration successful.");
-					model.addAttribute("patient", p);
-					//return "patient_show";
-					break;
+			// display message and patient information
+			model.addAttribute("message", "Registration successful.");
+			model.addAttribute("patient", p);
 
-				} //																	*******
-			}
 
 			return "patient_show";
-			// return "invalid_doctor"; // Not sure if this is what should be returned when no match with a doctor.
 
 		} catch (SQLException e) {
 
@@ -122,7 +116,7 @@ public class ControllerPatientCreate {
 
 		try (Connection con = getConnection()) {
 
-			PreparedStatement ps = con.prepareStatement("select last_name, first_name, primaryName from patient where id=? and last_name=?");
+			PreparedStatement ps = con.prepareStatement("select * from patient where id=? and last_name=?"); // last_name, first_name, primaryName
 			ps.setInt(1, p.getId());
 			ps.setString(2, p.getLast_name());
 
