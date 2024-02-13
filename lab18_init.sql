@@ -21,7 +21,7 @@ CREATE TABLE patient (
                          city VARCHAR(100) NOT NULL,
                          state VARCHAR(2) NOT NULL,
                          zipcode INT NOT NULL,
-                         doctor_id INT,
+                         doctor_id INT NOT NULL,
                          FOREIGN KEY (doctor_id) REFERENCES doctor(id));
 INSERT INTO patient (ssn, first_name, last_name, birthdate, street, city, state, zipcode, doctor_id) VALUES
                                                                                                          (123456789, 'John', 'Doe', '1990-05-15', '456 Oak Street', 'Cityville', 'CA', 12345, 1),
@@ -100,10 +100,10 @@ CREATE TABLE prescription (
                               RXID INT PRIMARY KEY auto_increment,
                               quantity INT NOT NULL,
                               number_refills INT NOT NULL,
-                              doctor_id INT,
-                              patient_id INT,
-                              pharmacy_id INT,
-                              drug_id INT,
+                              doctor_id INT NOT NULL,
+                              patient_id INT NOT NULL,
+                              pharmacy_id INT NOT NULL,
+                              drug_id INT NOT NULL,
                               FOREIGN KEY (doctor_id) REFERENCES doctor(id),
                               FOREIGN KEY (patient_id) REFERENCES patient(id),
                               FOREIGN KEY (drug_id) REFERENCES drug(drug_id),
@@ -125,6 +125,6 @@ CREATE TABLE prescription_fill(
 -- select * from patient;
 -- delete from prescription;
 -- select * from prescription;
-delete from prescription_fill;
-
+-- delete from prescription_fill;
+-- select * from patient;
 -- select * from cost join prescription on cost.drugId = prescription.drugID where prescription.RXID = 1;
