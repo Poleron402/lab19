@@ -1,7 +1,8 @@
 package application;
 
+import java.sql.*;
 import java.sql.Connection;
-import java.sql.SQLException;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,11 +20,11 @@ import view.*;
  */
 @Controller
 public class ControllerPatientCreate {
-	
+
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
-	
-	
+
+
 	/*
 	 * Request blank patient registration form.
 	 */
@@ -33,7 +34,7 @@ public class ControllerPatientCreate {
 		model.addAttribute("patient", new PatientView());
 		return "patient_register";
 	}
-	
+
 	/*
 	 * Process data from the patient_register form
 	 */
@@ -41,28 +42,69 @@ public class ControllerPatientCreate {
 	public String createPatient(PatientView p, Model model) {
 
 		/*
-		 * validate doctor last name and find the doctor id
-		 */
-		// TODO
-
-		/*
 		 * insert to patient table
 		 */
 
+		try (Connection con = getConnection()) {
+			PreparedStatement docQ = con.prepareStatement("SELECT id from doctor where last_name=?");
+			docQ.setString(1, p.getPrimaryName());
+			ResultSet doc = docQ.executeQuery();
+			int docId = 0;
+			if (doc.next()){
+				docId = doc.getInt(1);
+			}
 
-		// display patient data and the generated patient ID,  and success message
-		model.addAttribute("message", "Registration successful.");
-		model.addAttribute("patient", p);
-		return "patient_show";
 
-		/*
-		 * on error
-		 * model.addAttribute("message", some error message);
-		 * model.addAttribute("patient", p);
-		 * return "patient_register";
-		 */
+
+			PreparedStatement ps = con.prepareStatement("insert into patient(last_name, first_name, birthdate, ssn, street, city, state, zipcode, doctor_id ) values(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+					Statement.RETURN_GENERATED_KEYS);
+			ps.setString(1, p.getLast_name());
+			ps.setString(2, p.getFirst_name());
+			ps.setDate(3, Date.valueOf(p.getBirthdate()));
+			ps.setString(4, p.getSsn());
+			ps.setString(5, p.getStreet());
+			ps.setString(6, p.getCity());
+			ps.setString(7, p.getState());
+			ps.setString(8, p.getZipcode());
+			ps.setInt(9, docId);
+			ps.executeUpdate();
+			ResultSet rs = ps.getGeneratedKeys();
+			if (rs.next()) p.setId(rs.getInt(1));
+			// Check if Primary Name matches Doctor name before execute update.
+			// Note: the lab document gives the impression that primaryName is the doctor's last name.
+
+			/*
+			 * validate doctor last name and find the doctor id
+			 */
+
+
+
+//			ResultSet rs = ps.getGeneratedKeys();
+//			if (rs.next()) p.setId(rs.getInt(1));
+
+			// display message and patient information
+			model.addAttribute("message", "Registration successful.");
+			model.addAttribute("patient", p);
+
+
+			return "patient_show";
+
+		} catch (SQLException e) {
+
+			/*
+			 * on error
+			 * model.addAttribute("message", some error message);
+			 * model.addAttribute("patient", p);
+			 * return "patient_register";
+			 */
+
+			model.addAttribute("message", "SQL Error."+e.getMessage());
+			model.addAttribute("patient", p);
+			return "patient_register";
+		}
+
 	}
-	
+
 	/*
 	 * Request blank form to search for patient by id and name
 	 */
@@ -71,7 +113,7 @@ public class ControllerPatientCreate {
 		model.addAttribute("patient", new PatientView());
 		return "patient_get";
 	}
-	
+
 	/*
 	 * Perform search for patient by patient id and name.
 	 */
@@ -79,12 +121,36 @@ public class ControllerPatientCreate {
 	public String showPatient(PatientView p, Model model) {
 
 		// TODO   search for patient by id and name
-		
 		// if found, return "patient_show", else return error message and "patient_get"
-		
-		return "patient_show";
+
+		try (Connection con = getConnection()) {
+
+			PreparedStatement ps = con.prepareStatement("select * from patient where id=? and last_name=?"); // last_name, first_name, primaryName
+			ps.setInt(1, p.getId());
+			ps.setString(2, p.getLast_name());
+
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				p.setLast_name(rs.getString(1));
+				p.setFirst_name(rs.getString(2));
+				p.setPrimaryName(rs.getString(4));
+				model.addAttribute("patient", p);
+				return "patient_show";
+
+			} else {
+				model.addAttribute("message", "patient not found.");
+				model.addAttribute("patient", p);
+				return "patient_get";
+			}
+
+		} catch (SQLException e) {
+			System.out.println("SQL error in getPatient "+e.getMessage());
+			model.addAttribute("message", "SQL Error."+e.getMessage());
+			model.addAttribute("patient", p);
+			return "patient_get";
+		}
 	}
-	
+
 	/*
 	 * return JDBC Connection using jdbcTemplate in Spring Server
 	 */
