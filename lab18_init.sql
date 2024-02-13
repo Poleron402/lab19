@@ -16,15 +16,16 @@ CREATE TABLE patient (
                          ssn INT NOT NULL UNIQUE,
                          first_name VARCHAR(50) NOT NULL,
                          last_name VARCHAR(50) NOT NULL,
+                         birthdate date not null,
                          street VARCHAR(100) NOT NULL,
                          city VARCHAR(100) NOT NULL,
                          state VARCHAR(2) NOT NULL,
-                         zip INT NOT NULL,
+                         zipcode INT NOT NULL,
                          doctor_id INT,
                          FOREIGN KEY (doctor_id) REFERENCES doctor(id));
-INSERT INTO patient (ssn, first_name, last_name, street, city, state, zip, doctor_id) VALUES
-                                                                                          (123456789, 'John', 'Doe', '456 Oak Street', 'Cityville', 'CA', 12345, 1),
-                                                                                          (987654321, 'Jane', 'Smith', '789 Pine Avenue', 'Townsville', 'NY', 67890, 2);
+INSERT INTO patient (ssn, first_name, last_name, birthdate, street, city, state, zipcode, doctor_id) VALUES
+                                                                                                         (123456789, 'John', 'Doe', '1990-05-15', '456 Oak Street', 'Cityville', 'CA', 12345, 1),
+                                                                                                         (987654321, 'Jane', 'Smith', '1990-05-15', '789 Pine Avenue', 'Townsville', 'NY', 67890, 2);
 
 
 CREATE TABLE drug (
@@ -118,6 +119,11 @@ CREATE TABLE prescription_fill(
                                   FOREIGN KEY (RXID) REFERENCES prescription (RXID)
 
 );
-select * from doctor;
-delete from prescription;
-select * from prescription;
+-- use prescription;
+-- select * from doctor;
+-- select * from patient;
+-- delete from prescription;
+-- select * from prescription;
+delete from prescription_fill;
+
+-- select * from cost join prescription on cost.drugId = prescription.drugID where prescription.RXID = 1;
