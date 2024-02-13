@@ -70,8 +70,8 @@ public class ControllerPatientCreate {
 			ps.setString(9, doc.getString(1));
 			ps.executeUpdate();
 
-			ResultSet rs = ps.getGeneratedKeys();
-			if (rs.next()) p.setId(rs.getInt(1));
+//			ResultSet rs = ps.getGeneratedKeys();
+//			if (rs.next()) p.setId(rs.getInt(1));
 
 			// display message and patient information
 			model.addAttribute("message", "Registration successful.");
