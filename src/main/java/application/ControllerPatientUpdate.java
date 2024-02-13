@@ -51,17 +51,21 @@ public class ControllerPatientUpdate {
 			if (!rs.next()) {
 				return "index";
 			} else {
-				pv.setId(id);
-				pv.setLast_name(rs.getString(1));
-				pv.setFirst_name(rs.getString(2));
-				pv.setBirthdate(rs.getString(3));
-				pv.setSsn(rs.getString(4));
-				pv.setStreet(rs.getString(5));
-				pv.setCity(rs.getString(6));
-				pv.setState(rs.getString(7));
-				pv.setZipcode(rs.getString(8));
-				pv.setPrimaryName(rs.getString(9));
+				pv.setFirst_name(rs.getString(3));
+				pv.setLast_name(rs.getString(4));
+				pv.setBirthdate(rs.getString(5));
+				pv.setStreet(rs.getString(6));
+				pv.setCity(rs.getString(7));
+				pv.setState(rs.getString(8));
+				pv.setZipcode(rs.getString(9));
 
+				PreparedStatement docQ = con.prepareStatement("SELECT last_name from doctor where id=?");
+				docQ.setString(1, rs.getString(10));
+				ResultSet doc = docQ.executeQuery();
+
+				if (doc.next()) {
+					pv.setPrimaryName(doc.getString(1));
+				}
 
 				model.addAttribute("patient", pv);
 				return "patient_edit";
@@ -95,7 +99,7 @@ public class ControllerPatientUpdate {
 
 
 		try (Connection con = getConnection()) {
-			PreparedStatement ps = con.prepareStatement("update patient set street=?,  city=?, state=?, zipcode=?, primaryName=? where id=? ");
+			PreparedStatement ps = con.prepareStatement("update patient set street=?,  city=?, state=?, zipcode=?, doctor_id=? where id=? ");
 			ps.setString(1, p.getStreet());
 			ps.setString(2, p.getCity());
 			ps.setString(3, p.getState());
@@ -109,7 +113,7 @@ public class ControllerPatientUpdate {
 			ResultSet doc = docQ.executeQuery();
 
 			if (doc.next()) {
-				ps.setString(5, doc.getString(1));
+				ps.setInt(5, doc.getInt(1));
 			}
 
 			ps.setInt(6, p.getId());
