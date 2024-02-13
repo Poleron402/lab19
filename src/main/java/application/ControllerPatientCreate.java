@@ -45,17 +45,30 @@ public class ControllerPatientCreate {
 		 */
 
 		try (Connection con = getConnection()) {
-			PreparedStatement ps = con.prepareStatement("insert into patient(last_name, first_name, birthdate, ssn, street, city, state, zipcode, primaryName ) values(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			PreparedStatement docQ = con.prepareStatement("SELECT id from doctor where last_name=?");
+			docQ.setString(1, p.getPrimaryName());
+			ResultSet doc = docQ.executeQuery();
+			int docId = 0;
+			if (doc.next()){
+				docId = doc.getInt(1);
+			}
+
+
+
+			PreparedStatement ps = con.prepareStatement("insert into patient(last_name, first_name, birthdate, ssn, street, city, state, zipcode, doctor_id ) values(?, ?, ?, ?, ?, ?, ?, ?, ?)",
 					Statement.RETURN_GENERATED_KEYS);
 			ps.setString(1, p.getLast_name());
 			ps.setString(2, p.getFirst_name());
-			ps.setString(3, p.getBirthdate());
+			ps.setDate(3, Date.valueOf(p.getBirthdate()));
 			ps.setString(4, p.getSsn());
 			ps.setString(5, p.getStreet());
 			ps.setString(6, p.getCity());
 			ps.setString(7, p.getState());
 			ps.setString(8, p.getZipcode());
-
+			ps.setInt(9, docId);
+			ps.executeUpdate();
+			ResultSet rs = ps.getGeneratedKeys();
+			if (rs.next()) p.setId(rs.getInt(1));
 			// Check if Primary Name matches Doctor name before execute update.
 			// Note: the lab document gives the impression that primaryName is the doctor's last name.
 
@@ -63,12 +76,7 @@ public class ControllerPatientCreate {
 			 * validate doctor last name and find the doctor id
 			 */
 
-			PreparedStatement docQ = con.prepareStatement("SELECT id from doctor where last_name=?");
-			docQ.setString(1, p.getPrimaryName());
-			ResultSet doc = docQ.executeQuery();
 
-			ps.setString(9, doc.getString(1));
-			ps.executeUpdate();
 
 //			ResultSet rs = ps.getGeneratedKeys();
 //			if (rs.next()) p.setId(rs.getInt(1));
@@ -122,9 +130,27 @@ public class ControllerPatientCreate {
 
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-				p.setLast_name(rs.getString(1));
-				p.setFirst_name(rs.getString(2));
-				p.setPrimaryName(rs.getString(4));
+//				p.setId(rs.getInt(1));
+//				p.setLast_name(rs.getString(2));
+//				p.setPrimaryName(rs.getString(4));
+
+				p.setId(rs.getInt(1));
+				p.setFirst_name(rs.getString(3));
+				p.setLast_name(rs.getString(4));
+				p.setBirthdate(rs.getString(5));
+				p.setStreet(rs.getString(6));
+				p.setCity(rs.getString(7));
+				p.setState(rs.getString(8));
+				p.setZipcode(rs.getString(9));
+
+				PreparedStatement docQ = con.prepareStatement("SELECT last_name from doctor where id=?");
+				docQ.setString(1, rs.getString(10));
+				ResultSet doc = docQ.executeQuery();
+
+				if (doc.next()) {
+					p.setPrimaryName(doc.getString(1));
+				}
+
 				model.addAttribute("patient", p);
 				return "patient_show";
 

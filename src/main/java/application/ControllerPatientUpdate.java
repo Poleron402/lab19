@@ -108,7 +108,10 @@ public class ControllerPatientUpdate {
 			docQ.setString(1, p.getPrimaryName());
 			ResultSet doc = docQ.executeQuery();
 
-			ps.setString(5, doc.getString(1));
+			if (doc.next()) {
+				ps.setString(5, doc.getString(1));
+			}
+
 			ps.setInt(6, p.getId());
 
 			int rc = ps.executeUpdate();
