@@ -29,7 +29,7 @@ INSERT INTO patient (ssn, first_name, last_name, birthdate, street, city, state,
 
 
 CREATE TABLE drug (
-                      drugID INT PRIMARY KEY auto_increment,
+                      drug_id INT PRIMARY KEY auto_increment,
                       name VARCHAR(50) NOT NULL);
 
 INSERT INTO drug (name) VALUES ('Aspirin');
@@ -37,6 +37,7 @@ INSERT INTO drug (name) VALUES ('Acetaminophen');
 INSERT INTO drug (name) VALUES ('Ibuprofen');
 INSERT INTO drug (name) VALUES ('Lisinopril');
 INSERT INTO drug (name) VALUES ('Metformin');
+
 
 SELECT * FROM drug;
 
@@ -55,45 +56,45 @@ INSERT INTO pharmacy (name, address, phone) VALUES
 
 CREATE TABLE IF NOT EXISTS cost (
                                     pharmacy_id INT NOT NULL,
-                                    drugId INT NOT NULL,
+                                    drug_id INT NOT NULL,
                                     unit VARCHAR(100), -- like tablets, bottles, etc
     cost DECIMAL(6,2) NOT NULL,
     amount INT NOT NULL,
-    PRIMARY KEY (pharmacy_id, drugId),
+    PRIMARY KEY (pharmacy_id, drug_id),
     FOREIGN KEY (pharmacy_id) REFERENCES pharmacy (pharmacy_id),
-    FOREIGN KEY (drugId) REFERENCES drug (drugID));
+    FOREIGN KEY (drug_id) REFERENCES drug (drug_id));
 
 
-INSERT INTO cost (pharmacy_id, drugId, unit, cost, amount) VALUES
-                                                               (1, 1, 'tablets', 5.99, 100),
-                                                               (1, 2, 'bottles', 10.50, 50),
-                                                               (1, 3, 'tablets', 7.25, 75),
-                                                               (1, 4, 'bottles', 15.75, 30),
-                                                               (1, 5, 'tablets', 8.50, 60);
+INSERT INTO cost (pharmacy_id, drug_id, unit, cost, amount) VALUES
+                                                                (1, 1, 'tablets', 5.99, 100),
+                                                                (1, 2, 'bottles', 10.50, 50),
+                                                                (1, 3, 'tablets', 7.25, 75),
+                                                                (1, 4, 'bottles', 15.75, 30),
+                                                                (1, 5, 'tablets', 8.50, 60);
 
 -- XYZ Pharmacy
-INSERT INTO cost (pharmacy_id, drugId, unit, cost, amount) VALUES
-                                                               (2, 1, 'tablets', 6.25, 120),
-                                                               (2, 2, 'bottles', 11.75, 40),
-                                                               (2, 3, 'tablets', 8.00, 90),
-                                                               (2, 4, 'bottles', 14.20, 25),
-                                                               (2, 5, 'tablets', 9.75, 70);
+INSERT INTO cost (pharmacy_id, drug_id, unit, cost, amount) VALUES
+                                                                (2, 1, 'tablets', 6.25, 120),
+                                                                (2, 2, 'bottles', 11.75, 40),
+                                                                (2, 3, 'tablets', 8.00, 90),
+                                                                (2, 4, 'bottles', 14.20, 25),
+                                                                (2, 5, 'tablets', 9.75, 70);
 
 -- Eagle Pharmacy
-INSERT INTO cost (pharmacy_id, drugId, unit, cost, amount) VALUES
-                                                               (3, 1, 'tablets', 5.50, 80),
-                                                               (3, 2, 'bottles', 10.00, 60),
-                                                               (3, 3, 'tablets', 6.75, 100),
-                                                               (3, 4, 'bottles', 14.50, 35),
-                                                               (3, 5, 'tablets', 7.90, 50);
+INSERT INTO cost (pharmacy_id, drug_id, unit, cost, amount) VALUES
+                                                                (3, 1, 'tablets', 5.50, 80),
+                                                                (3, 2, 'bottles', 10.00, 60),
+                                                                (3, 3, 'tablets', 6.75, 100),
+                                                                (3, 4, 'bottles', 14.50, 35),
+                                                                (3, 5, 'tablets', 7.90, 50);
 
 -- Sunrise Pharmacy
-INSERT INTO cost (pharmacy_id, drugId, unit, cost, amount) VALUES
-                                                               (4, 1, 'tablets', 6.75, 150),
-                                                               (4, 2, 'bottles', 12.50, 45),
-                                                               (4, 3, 'tablets', 9.00, 80),
-                                                               (4, 4, 'bottles', 16.00, 20),
-                                                               (4, 5, 'tablets', 8.25, 65);
+INSERT INTO cost (pharmacy_id, drug_id, unit, cost, amount) VALUES
+                                                                (4, 1, 'tablets', 6.75, 150),
+                                                                (4, 2, 'bottles', 12.50, 45),
+                                                                (4, 3, 'tablets', 9.00, 80),
+                                                                (4, 4, 'bottles', 16.00, 20),
+                                                                (4, 5, 'tablets', 8.25, 65);
 
 CREATE TABLE prescription (
                               RXID INT PRIMARY KEY auto_increment,
@@ -102,10 +103,10 @@ CREATE TABLE prescription (
                               doctor_id INT,
                               patient_id INT,
                               pharmacy_id INT,
-                              drugID INT,
+                              drug_id INT,
                               FOREIGN KEY (doctor_id) REFERENCES doctor(id),
                               FOREIGN KEY (patient_id) REFERENCES patient(id),
-                              FOREIGN KEY (drugID) REFERENCES drug(drugID),
+                              FOREIGN KEY (drug_id) REFERENCES drug(drug_id),
                               FOREIGN KEY (pharmacy_id) REFERENCES pharmacy(pharmacy_id));
 
 CREATE TABLE prescription_fill(
