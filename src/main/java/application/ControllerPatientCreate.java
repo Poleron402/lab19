@@ -2,7 +2,6 @@ package application;
 
 import java.sql.*;
 import java.sql.Connection;
-import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -52,6 +51,10 @@ public class ControllerPatientCreate {
 			int docId = 0;
 			if (doc.next()){
 				docId = doc.getInt(1);
+			}else{
+				model.addAttribute("message", "Doctor not found.");
+				model.addAttribute("patient", p);
+				return "patient_register";
 			}
 
 
@@ -131,9 +134,27 @@ public class ControllerPatientCreate {
 
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-				p.setLast_name(rs.getString(1));
-				p.setFirst_name(rs.getString(2));
-				p.setPrimaryName(rs.getString(4));
+//				p.setId(rs.getInt(1));
+//				p.setLast_name(rs.getString(2));
+//				p.setPrimaryName(rs.getString(4));
+
+				p.setId(rs.getInt(1));
+				p.setFirst_name(rs.getString(3));
+				p.setLast_name(rs.getString(4));
+				p.setBirthdate(rs.getString(5));
+				p.setStreet(rs.getString(6));
+				p.setCity(rs.getString(7));
+				p.setState(rs.getString(8));
+				p.setZipcode(rs.getString(9));
+
+				PreparedStatement docQ = con.prepareStatement("SELECT last_name from doctor where id=?");
+				docQ.setString(1, rs.getString(10));
+				ResultSet doc = docQ.executeQuery();
+
+				if (doc.next()) {
+					p.setPrimaryName(doc.getString(1));
+				}
+
 				model.addAttribute("patient", p);
 				return "patient_show";
 
