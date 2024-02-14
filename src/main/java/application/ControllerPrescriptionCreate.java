@@ -82,17 +82,17 @@ public class ControllerPrescriptionCreate {
 			/*
 			 * insert prescription
 			 */
-			PreparedStatement getId = conn.prepareStatement("select drugID from drug where name = ?");
+			PreparedStatement getId = conn.prepareStatement("select drug_id from drug where name = ?");
 			getId.setString(1, p.getDrugName());
 			ResultSet resultSet = getId.executeQuery();
 			int drug_id = 0;
 			// Check if the ResultSet has any rows
 			if (resultSet.next()) {
 				// Retrieve the value from the ResultSet and assign it to the int variable
-				drug_id = resultSet.getInt("drugID");
+				drug_id = resultSet.getInt("drug_id");
 			}
 			PreparedStatement addPrescription = conn.prepareStatement(
-					"insert into prescription (quantity, number_refills, doctor_id, patient_id, drugID) values(?, ?, ?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
+					"insert into prescription (quantity, number_refills, doctor_id, patient_id, drug_id) values(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			addPrescription.setInt(1, p.getQuantity());
 			addPrescription.setInt(2, p.getRefills());
 			addPrescription.setInt(3, p.getDoctor_id());

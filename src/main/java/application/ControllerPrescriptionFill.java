@@ -77,11 +77,15 @@ public class ControllerPrescriptionFill {
 			// TODO find the prescription
 			int RXID = p.getRxid();
 			String drugName = "";
-			PreparedStatement drugLookup= conn.prepareStatement("select * from drug join prescription on drug.drugID = prescription.drugID where prescription.RXID = ?");
+			PreparedStatement drugLookup= conn.prepareStatement("select * from drug join prescription on drug.drug_id = prescription.drug_id where prescription.RXID = ?");
 			drugLookup.setInt(1, RXID);
 			ResultSet drugRs = drugLookup.executeQuery();
 			if (drugRs.next()){
 				drugName = drugRs.getString("name");
+			}else{
+				model.addAttribute("message", "No such prescription found");
+				model.addAttribute("prescription", p);
+				return "prescription_fill";
 			}
 
 
@@ -128,7 +132,7 @@ public class ControllerPrescriptionFill {
 			String docLastName = "";
 			int docId = -1;
 			if (!checkDocRes.next()){
-				model.addAttribute("message", "Exceeded the number of refills, see the doctor to renew prescription");
+				model.addAttribute("message", "No doctor found");
 				model.addAttribute("prescription", p);
 				return "prescription_fill";
 			}else{
@@ -145,16 +149,16 @@ public class ControllerPrescriptionFill {
 			double priceTotal = 0.0;
 			int quantityPrescribed = 0;
 			int amountDistributed;
-			PreparedStatement getAmount = conn.prepareStatement("select * from cost join prescription on cost.drugId = prescription.drugID where prescription.RXID = ?");
+			PreparedStatement getAmount = conn.prepareStatement("select * from cost join prescription on cost.drug_id = prescription.drug_id where prescription.RXID = ?");
 			getAmount.setInt(1, RXID);
 			ResultSet rsAmount = getAmount.executeQuery();
 			if(rsAmount.next()){
 				amountDistributed = rsAmount.getInt("amount");
 				cost = rsAmount.getDouble("cost");
 				quantityPrescribed = rsAmount.getInt("quantity");
-				priceTotal = cost*(quantityPrescribed/amountDistributed);
+				priceTotal = cost*quantityPrescribed/amountDistributed;
 			}else{
-				model.addAttribute("message", "Error calculating th etotal cost");
+				model.addAttribute("message", "Error calculating the total cost");
 				model.addAttribute("prescription", p);
 				return "prescription_fill";
 			}
@@ -183,7 +187,7 @@ public class ControllerPrescriptionFill {
 			model.addAttribute("prescription", p);
 			return "prescription_show";
 		} catch (SQLException e) {
-			model.addAttribute("message", "SQL Error." + e.getMessage());
+			model.addAttribute("message", "SQL Error. " + e.getMessage());
 			model.addAttribute("prescription", p);
 			return "prescription_fill";
 		}
