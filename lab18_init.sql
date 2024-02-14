@@ -102,12 +102,10 @@ CREATE TABLE prescription (
                               number_refills INT NOT NULL,
                               doctor_id INT NOT NULL,
                               patient_id INT NOT NULL,
-                              pharmacy_id INT NOT NULL,
                               drug_id INT NOT NULL,
                               FOREIGN KEY (doctor_id) REFERENCES doctor(id),
                               FOREIGN KEY (patient_id) REFERENCES patient(id),
-                              FOREIGN KEY (drug_id) REFERENCES drug(drug_id),
-                              FOREIGN KEY (pharmacy_id) REFERENCES pharmacy(pharmacy_id));
+                              FOREIGN KEY (drug_id) REFERENCES drug(drug_id));
 
 CREATE TABLE prescription_fill(
                                   fillId INT AUTO_INCREMENT,
